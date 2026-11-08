@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Large binaries & media (GitHub 100MB limit)
+*.exe
+*.pyd
+*.dll
+*.data
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.zip
+*.tar.gz
+*.7z
+
+# PyInstaller / Temp extracted folders / Raw binary dist
+v-translate-07-11/
+v-translate-07-11.exe_extracted/
+build/
+dist/
+*.spec
+New Text Document.txt
+
+# Node / NPM
+node_modules/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
