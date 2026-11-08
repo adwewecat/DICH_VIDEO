@@ -107,6 +107,7 @@ Dich_video/
 | **2026-11-08** | Kiểm thử tự động (Unit Test) | Kiểm tra toàn bộ module core & GUI, kết quả 100% Pass không có lỗi. | ✅ Hoàn thành |
 | **2026-11-08** | Tạo file `run.bat` | File chạy 1-click tự động kiểm tra Python, cài đặt thư viện thiếu và mở app. | ✅ Hoàn thành |
 | **2026-11-08** | Cập nhật Model Gemini 3.8 Flash & Auto-fetch | Hỗ trợ Gemini 3.8 Flash, cho phép nhập model tùy ý và lấy danh sách live từ API. | ✅ Hoàn thành |
+| **2026-11-08** | Khắc phục lỗi 404/503 & Tích hợp Auto-Fallback | Loại bỏ `gemini-2.5-flash` đã bị Google khai tử (404), mặc định `gemini-3.6-flash` cực nhanh và ổn định. Thêm cơ chế tự động chuyển model dự phòng khi gặp 404 hoặc 503 (quá tải) mà không gây gián đoạn. | ✅ Hoàn thành |
 | **2026-11-08** | Push code lên GitHub | Đẩy toàn bộ thay đổi lên `adwewecat/DICH_VIDEO.git`. | ✅ Hoàn thành |
 
 ---

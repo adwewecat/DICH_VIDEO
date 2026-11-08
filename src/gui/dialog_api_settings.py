@@ -71,13 +71,12 @@ class ApiSettingsDialog(ctk.CTkToplevel):
         self.model_combo = ctk.CTkComboBox(
             model_frame,
             values=[
+                "gemini-3.6-flash",
                 "gemini-3.8-flash",
-                "gemini-3.0-flash",
-                "gemini-2.5-flash",
-                "gemini-2.5-pro",
-                "gemini-2.0-flash",
-                "gemini-2.0-flash-lite",
-                "gemini-2.0-flash-thinking-exp",
+                "gemini-3.5-flash",
+                "gemini-3.5-flash-lite",
+                "gemini-flash-lite-latest",
+                "gemini-3-flash-preview",
                 "gemini-1.5-flash",
                 "gemini-1.5-pro",
             ],
@@ -126,7 +125,9 @@ class ApiSettingsDialog(ctk.CTkToplevel):
         if saved_keys:
             self.keys_textbox.insert("1.0", "\n".join(saved_keys))
 
-        saved_model = config.get("gemini_model", "gemini-2.5-flash")
+        saved_model = config.get("gemini_model", "gemini-3.6-flash")
+        if "2.5" in saved_model or "2.0" in saved_model:
+            saved_model = "gemini-3.6-flash"
         self.model_combo.set(saved_model)
 
     def _fetch_models_threaded(self):
@@ -169,14 +170,18 @@ class ApiSettingsDialog(ctk.CTkToplevel):
 
         def worker():
             first_key = keys[0]
-            gemini_pool.model_name = self.model_combo.get().strip()
-            success, msg = gemini_pool.test_key(first_key)
+            selected_model = self.model_combo.get().strip()
+            gemini_pool.model_name = selected_model
+            success, msg = gemini_pool.test_key(first_key, model_name=selected_model)
 
             def update_ui():
                 self.test_btn.configure(state="normal")
+                # Nếu gemini_pool đã tự động fallback sang model ổn định hơn, đồng bộ lại UI
+                if gemini_pool.model_name != selected_model:
+                    self.model_combo.set(gemini_pool.model_name)
                 if success:
                     self.status_label.configure(text=f"✅ {msg}", text_color="#4ECCA3")
-                    messagebox.showinfo("Thành công", f"Kết nối Gemini API thành công!\n\nModel: {gemini_pool.model_name}")
+                    messagebox.showinfo("Thành công", f"Kết nối Gemini API thành công!\n\n{msg}")
                 else:
                     self.status_label.configure(text="❌ Kết nối thất bại!", text_color="#E84545")
                     messagebox.showerror("Lỗi kết nối", f"Không thể kết nối tới Gemini API:\n\n{msg}")

@@ -36,8 +36,8 @@ class AppConfig:
         self.defaults: Dict[str, Any] = {
             # Danh sách Google Gemini API Keys (hỗ trợ nhiều key để tự động xoay vòng)
             "gemini_api_keys": [],
-            # Mô hình Gemini mặc định
-            "gemini_model": "gemini-2.5-flash",
+            # Mô hình Gemini mặc định (Gemini 3.6 Flash / 3.8 Flash tốc độ cao và chuẩn ngữ cảnh nhất)
+            "gemini_model": "gemini-3.6-flash",
             # Nhiệt độ sáng tạo (0.0 - 1.0, 0.3 là tối ưu cho dịch thuật chuẩn xác)
             "gemini_temperature": 0.3,
             # Cấp độ suy nghĩ (Thinking Level) cho các model Gemini 2.0+ Flash Thinking
@@ -74,6 +74,12 @@ class AppConfig:
                     saved_data = json.load(f)
                     if isinstance(saved_data, dict):
                         self.data.update(saved_data)
+                        # Tự động nâng cấp các model đã bị Google khai tử (2.5-flash / 2.5-pro / 2.0-flash)
+                        # sang phiên bản Gemini 3.6 Flash cực nhanh và ổn định nhất
+                        current_model = self.data.get("gemini_model", "")
+                        if current_model in ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite"]:
+                            self.data["gemini_model"] = "gemini-3.6-flash"
+                            self.save()
             except Exception as e:
                 print(f"[Config] Cảnh báo: Không thể đọc file cấu hình, dùng mặc định ({e})")
 

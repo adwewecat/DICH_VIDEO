@@ -98,21 +98,54 @@ class GeminiTranslationPool:
             self.clients_cache[api_key] = genai.Client(api_key=api_key)
         return self.clients_cache[api_key]
 
-    def test_key(self, api_key: str) -> Tuple[bool, str]:
-        """Kiểm tra tính hợp lệ của một API Key đơn lẻ."""
+    # Danh sách các mô hình ổn định cao dự phòng khi mô hình người dùng chọn bị lỗi (404/503)
+    STABLE_FALLBACK_MODELS = [
+        "gemini-3.6-flash",
+        "gemini-3.5-flash",
+        "gemini-flash-lite-latest",
+        "gemini-3.8-flash",
+    ]
+
+    def test_key(self, api_key: str, model_name: Optional[str] = None) -> Tuple[bool, str]:
+        """
+        Kiểm tra tính hợp lệ của một API Key đơn lẻ.
+        Tự động fallback thông minh nếu mô hình đã bị Google khai tử (404) hoặc máy chủ quá tải (503).
+        """
         if not api_key:
             return False, "API Key rỗng."
+        target_model = model_name or self.model_name
         try:
             client = self._get_client_for_key(api_key)
             response = client.models.generate_content(
-                model=self.model_name,
+                model=target_model,
                 contents="Xin chào, hãy trả lời 'OK' để kiểm tra kết nối.",
             )
             if response and response.text:
-                return True, f"Kết nối thành công! Phản hồi: {response.text.strip()}"
-            return False, "Không nhận được phản hồi từ mô hình."
+                return True, f"Kết nối thành công tới mô hình '{target_model}'! Phản hồi: {response.text.strip()}"
+            return False, f"Không nhận được phản hồi từ mô hình {target_model}."
         except Exception as e:
-            return False, f"Lỗi kết nối: {str(e)}"
+            err_str = str(e)
+            # Nếu gặp 404 (model đã bị Google khai tử) hoặc 503 (server Google quá tải), tự động thử fallback sang model ổn định
+            if "404" in err_str or "503" in err_str or "unavailable" in err_str.lower() or "not found" in err_str.lower():
+                print(f"[GeminiPool] Mô hình '{target_model}' gặp lỗi ({err_str[:60]}...). Đang tự động kiểm tra mô hình ổn định...")
+                for fallback in self.STABLE_FALLBACK_MODELS:
+                    if fallback == target_model:
+                        continue
+                    try:
+                        fb_resp = client.models.generate_content(
+                            model=fallback,
+                            contents="Xin chào, kiểm tra kết nối.",
+                        )
+                        if fb_resp and fb_resp.text:
+                            # Cập nhật lại model_name sang fallback ổn định
+                            self.model_name = fallback
+                            return True, (
+                                f"Key hoàn toàn hợp lệ! (Lưu ý: Mô hình '{target_model}' tạm thời quá tải hoặc đã cũ (404/503), "
+                                f"hệ thống đã tự động chuyển sang mô hình ổn định nhất: '{fallback}')"
+                            )
+                    except Exception:
+                        continue
+            return False, f"Lỗi kết nối ({target_model}): {err_str}"
 
     def test_all_keys(self) -> Dict[str, Tuple[bool, str]]:
         """Kiểm tra toàn bộ danh sách API Keys trong pool."""
@@ -196,11 +229,27 @@ class GeminiTranslationPool:
                     "system_instruction": system_instruction,
                 }
                 
-                response = client.models.generate_content(
-                    model=self.model_name,
-                    contents=user_content,
-                    config=config_params,
-                )
+                # Thử gọi với mô hình hiện tại; nếu gặp lỗi 404/503 thì tự động fallback sang mô hình khả dụng
+                response = None
+                models_to_try = [self.model_name] + [m for m in self.STABLE_FALLBACK_MODELS if m != self.model_name]
+                for candidate in models_to_try:
+                    try:
+                        response = client.models.generate_content(
+                            model=candidate,
+                            contents=user_content,
+                            config=config_params,
+                        )
+                        if response and response.text:
+                            if candidate != self.model_name:
+                                print(f"[GeminiPool] Đã tự động đổi sang mô hình {candidate} do mô hình trước không phản hồi.")
+                                self.model_name = candidate
+                            break
+                    except Exception as mod_err:
+                        m_err_str = str(mod_err)
+                        if "404" in m_err_str or "503" in m_err_str or "unavailable" in m_err_str.lower():
+                            print(f"[GeminiPool] Model {candidate} lỗi ({m_err_str[:40]}...), thử model tiếp theo...")
+                            continue
+                        raise mod_err
 
                 if response and response.text:
                     translated_map = self._parse_numbered_response(response.text, len(texts))
