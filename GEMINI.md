@@ -106,6 +106,7 @@ Dich_video/
 | **2026-11-08** | Viết `HUONG_DAN_SU_DUNG.md` | Tài liệu hướng dẫn sử dụng chi tiết từng chức năng, từng tab, từng dòng. | ✅ Hoàn thành |
 | **2026-11-08** | Kiểm thử tự động (Unit Test) | Kiểm tra toàn bộ module core & GUI, kết quả 100% Pass không có lỗi. | ✅ Hoàn thành |
 | **2026-11-08** | Tạo file `run.bat` | File chạy 1-click tự động kiểm tra Python, cài đặt thư viện thiếu và mở app. | ✅ Hoàn thành |
+| **2026-11-08** | Cập nhật Model Gemini 3.8 Flash & Auto-fetch | Hỗ trợ Gemini 3.8 Flash, cho phép nhập model tùy ý và lấy danh sách live từ API. | ✅ Hoàn thành |
 | **2026-11-08** | Push code lên GitHub | Đẩy toàn bộ thay đổi lên `adwewecat/DICH_VIDEO.git`. | ✅ Hoàn thành |
 
 ---

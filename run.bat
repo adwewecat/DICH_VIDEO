@@ -66,3 +66,4 @@ if %errorlevel% neq 0 (
     echo [*] Vui lòng xem thông báo lỗi ở trên để xử lý.
     pause
 )
+

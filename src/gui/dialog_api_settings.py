@@ -71,15 +71,30 @@ class ApiSettingsDialog(ctk.CTkToplevel):
         self.model_combo = ctk.CTkComboBox(
             model_frame,
             values=[
+                "gemini-3.8-flash",
+                "gemini-3.0-flash",
                 "gemini-2.5-flash",
+                "gemini-2.5-pro",
                 "gemini-2.0-flash",
                 "gemini-2.0-flash-lite",
+                "gemini-2.0-flash-thinking-exp",
                 "gemini-1.5-flash",
                 "gemini-1.5-pro",
             ],
-            width=220,
+            width=230,
         )
         self.model_combo.pack(side="left", padx=5, pady=10)
+
+        # Nút lấy danh sách models live từ Google API
+        self.fetch_models_btn = ctk.CTkButton(
+            model_frame,
+            text="🔄 Quét Models",
+            width=95,
+            command=self._fetch_models_threaded,
+            fg_color="#393E46",
+            hover_color="#222831",
+        )
+        self.fetch_models_btn.pack(side="left", padx=4, pady=10)
 
         # Nút kiểm tra kết nối
         self.test_btn = ctk.CTkButton(
@@ -113,6 +128,33 @@ class ApiSettingsDialog(ctk.CTkToplevel):
 
         saved_model = config.get("gemini_model", "gemini-2.5-flash")
         self.model_combo.set(saved_model)
+
+    def _fetch_models_threaded(self):
+        """Truy vấn trực tiếp danh sách mô hình từ Google API bằng Key đầu tiên."""
+        keys_text = self.keys_textbox.get("1.0", "end").strip()
+        keys = [k.strip() for k in keys_text.split("\n") if k.strip()]
+        if not keys:
+            messagebox.showwarning("Cảnh báo", "Vui lòng nhập API Key để quét danh sách mô hình từ Google.")
+            return
+
+        self.fetch_models_btn.configure(state="disabled")
+        self.status_label.configure(text="Đang quét danh sách mô hình từ Google API...", text_color="yellow")
+
+        def worker():
+            models = gemini_pool.fetch_available_models(keys[0])
+
+            def update_ui():
+                self.fetch_models_btn.configure(state="normal")
+                if models:
+                    self.model_combo.configure(values=models)
+                    self.status_label.configure(text=f"✅ Đã tìm thấy {len(models)} mô hình từ Google API!", text_color="#4ECCA3")
+                    messagebox.showinfo("Thành công", f"Đã nạp thành công {len(models)} mô hình khả dụng từ tài khoản Google của bạn!")
+                else:
+                    self.status_label.configure(text="⚠️ Không lấy được danh sách (sử dụng danh sách mặc định).", text_color="orange")
+
+            self.after(0, update_ui)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _test_connection_threaded(self):
         """Kiểm tra kết nối trên luồng phụ để không bị đơ giao diện."""

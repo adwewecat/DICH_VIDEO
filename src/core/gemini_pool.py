@@ -123,6 +123,30 @@ class GeminiTranslationPool:
             results[masked] = (success, msg)
         return results
 
+    def fetch_available_models(self, api_key: Optional[str] = None) -> List[str]:
+        """
+        Truy vấn trực tiếp danh sách các mô hình Gemini khả dụng từ Google API.
+        Giúp người dùng cập nhật ngay lập tức các mô hình mới nhất (Gemini 3.8 Flash, 3.0 Flash, 2.5 Flash...).
+        """
+        key = api_key or self.get_current_key()
+        if not key:
+            return []
+        try:
+            client = self._get_client_for_key(key)
+            models = client.models.list()
+            model_names = []
+            for m in models:
+                name = getattr(m, "name", "") or ""
+                if name.startswith("models/"):
+                    name = name[len("models/"):]
+                if any(x in name.lower() for x in ["gemini", "flash", "pro", "gemma"]):
+                    model_names.append(name)
+            if model_names:
+                return sorted(list(set(model_names)), reverse=True)
+        except Exception as e:
+            print(f"[GeminiPool] Lỗi khi truy vấn danh sách models từ API: {e}")
+        return []
+
     def translate_chunk(
         self,
         texts: List[str],
