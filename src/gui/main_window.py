@@ -187,3 +187,4 @@ class MainWindow(ctk.CTk):
         else:
             ctk.set_appearance_mode("light")
             config.set("appearance_mode", "light")
+

@@ -331,3 +331,4 @@ class VideoExtractTab(ctk.CTkFrame):
             self.after(0, done)
 
         threading.Thread(target=worker, daemon=True).start()
+

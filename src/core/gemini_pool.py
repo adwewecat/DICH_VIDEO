@@ -286,3 +286,4 @@ class GeminiTranslationPool:
 
 # Singleton instance dùng chung
 gemini_pool = GeminiTranslationPool()
+

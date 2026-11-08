@@ -313,3 +313,4 @@ class DubbingManager:
 
 # Singleton instance dùng chung
 dubbing_manager = DubbingManager()
+

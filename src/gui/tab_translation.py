@@ -397,3 +397,4 @@ class TranslationTab(ctk.CTkFrame):
 
         if self.on_send_to_dubbing_cb:
             self.on_send_to_dubbing_cb(self.translated_entries)
+

@@ -28,3 +28,4 @@ for kw in [b'script.google.com', b'macros/s/', b'googleapis.com', b'vietqr', b'i
         end = min(len(data), pos + 100)
         print(f"Found keyword {kw} at {pos}: {data[start:end]}")
         pos += len(kw)
+

@@ -109,3 +109,4 @@ class AppConfig:
 
 # Singleton instance để các module dùng chung
 config = AppConfig()
+

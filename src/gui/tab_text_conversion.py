@@ -173,3 +173,4 @@ class TextConversionTab(ctk.CTkFrame):
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(content)
             messagebox.showinfo("Đã lưu", f"Đã lưu kết quả tại:\n{save_path}")
+

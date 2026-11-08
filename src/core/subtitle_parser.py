@@ -285,3 +285,4 @@ def split_subtitles_into_parts(
         )
 
     return parts
+

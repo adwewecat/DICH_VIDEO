@@ -66,6 +66,7 @@ Dich_video/
 ├── README.md                       # Hướng dẫn tổng quan cho người dùng & Dev
 ├── HUONG_DAN_SU_DUNG.md            # Hướng dẫn sử dụng chi tiết từng chức năng, từng dòng
 ├── requirements.txt                # Danh sách thư viện Python chuẩn mực
+├── run.bat                         # File khởi chạy 1-click trên Windows (Auto-check & Run)
 ├── main.py                         # Điểm khởi chạy ứng dụng chính (Clean GUI)
 ├── src/                            # Toàn bộ mã nguồn sạch của ứng dụng
 │   ├── core/                       # Các module xử lý logic lõi
@@ -104,6 +105,7 @@ Dich_video/
 | **2026-11-08** | Xây dựng mã nguồn sạch (Clean Code) | Tái lập toàn bộ logic 4 Tab trong `src/`, loại bỏ sạch 100% mã độc / DRM. | ✅ Hoàn thành |
 | **2026-11-08** | Viết `HUONG_DAN_SU_DUNG.md` | Tài liệu hướng dẫn sử dụng chi tiết từng chức năng, từng tab, từng dòng. | ✅ Hoàn thành |
 | **2026-11-08** | Kiểm thử tự động (Unit Test) | Kiểm tra toàn bộ module core & GUI, kết quả 100% Pass không có lỗi. | ✅ Hoàn thành |
+| **2026-11-08** | Tạo file `run.bat` | File chạy 1-click tự động kiểm tra Python, cài đặt thư viện thiếu và mở app. | ✅ Hoàn thành |
 | **2026-11-08** | Push code lên GitHub | Đẩy toàn bộ thay đổi lên `adwewecat/DICH_VIDEO.git`. | ✅ Hoàn thành |
 
 ---

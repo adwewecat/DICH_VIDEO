@@ -21,3 +21,4 @@ numpy>=1.24.0
 
 # Mô hình học sâu & OCR (ONNX Runtime)
 onnxruntime>=1.16.0
+

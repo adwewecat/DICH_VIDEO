@@ -18,7 +18,14 @@
 
 ## 1. KHỞI ĐỘNG ỨNG DỤNG
 
-### Cách 1: Chạy trực tiếp từ dòng lệnh
+### Cách 1: Chạy 1-Click bằng file `run.bat` (Khuyên dùng nhất)
+1. Trong thư mục dự án `D:\LAPTRINH\Dich_video`, **chỉ cần nhấp đúp chuột (Double click) vào file `run.bat`**.
+2. Chương trình sẽ tự động:
+   - Kiểm tra Python trên máy của bạn.
+   - Kiểm tra và tự động cài đặt thư viện còn thiếu từ `requirements.txt`.
+   - Khởi động giao diện ứng dụng đồ họa ngay lập tức.
+
+### Cách 2: Chạy từ dòng lệnh (Terminal / PowerShell / CMD)
 1. Mở PowerShell hoặc Command Prompt tại thư mục dự án `D:\LAPTRINH\Dich_video`.
 2. Chạy lệnh:
    ```bash
@@ -155,3 +162,4 @@ Tab tiện ích hỗ trợ biên tập viên video:
 | **Không tải được video Douyin** | Link chia sẻ bị dính văn bản rác hoặc link hết hạn | Copy lại link trực tiếp từ trình duyệt hoặc app, dán vào ô link và bấm tải lại. |
 | **Giọng đọc lồng tiếng bị chậm** | Bỏ chọn tính năng Auto Time-Stretch | Luôn tích chọn ô `Tự động co giãn tốc độ (Time-Stretch)` trong Tab Lồng tiếng. |
 | **Không tìm thấy FFmpeg** | Chưa cài đặt FFmpeg trên Windows | Ứng dụng đã tự động nhận diện `ffmpeg.exe` trong thư mục `v-translate-07-11/_internal`. Bạn cũng có thể cài thêm FFmpeg vào PATH hệ thống nếu muốn. |
+

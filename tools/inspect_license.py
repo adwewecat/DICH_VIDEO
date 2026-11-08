@@ -22,3 +22,4 @@ for kw in keywords:
         readable = ''.join([chr(b) if chr(b) in string.printable else '.' for b in chunk])
         print(f"[{pos}]: {readable}\n")
         pos += len(kw)
+

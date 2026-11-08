@@ -32,3 +32,4 @@ for pos, text in matches[:25]:
     import string
     printable = ''.join(c if (c in string.printable or ord(c) > 127) else ' ' for c in text)
     print(f"[{pos}]: {printable}\n---")
+

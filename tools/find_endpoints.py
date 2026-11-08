@@ -28,3 +28,4 @@ for r in found_list:
     lower = r.lower()
     if any(k in lower for k in ['script', 'google', 'vietqr', 'akfy', 'api', 'proxy', 'auth', 'http', 'translate', 'license', 'sheet', 'drive', 'telegram', 'discord', 'server']):
         print(" ->", r)
+

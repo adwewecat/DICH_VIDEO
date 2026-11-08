@@ -155,3 +155,4 @@ class ApiSettingsDialog(ctk.CTkToplevel):
 
         messagebox.showinfo("Đã lưu", f"Đã lưu thành công {len(keys)} API Key(s) và mô hình {selected_model}!")
         self.destroy()
+
