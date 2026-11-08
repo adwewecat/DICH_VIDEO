@@ -64,17 +64,17 @@ class MainWindow(ctk.CTk):
         # Các nút chuyển Tab trên Sidebar
         self.nav_buttons = {}
         tabs = [
-            ("tab1", "🎬 Trích Xuất Video", self._show_tab1),
-            ("tab2", "🌐 Dịch Thuật AI", self._show_tab2),
-            ("tab3", "🎙️ Lồng Tiếng AI", self._show_tab3),
-            ("tab4", "📄 Xử Lý Văn Bản", self._show_tab4),
+            ("tab1", "1️⃣ Bước 1: Trích Xuất Video", self._show_tab1),
+            ("tab2", "2️⃣ Bước 2: Dịch Thuật AI", self._show_tab2),
+            ("tab3", "3️⃣ Bước 3: Lồng Tiếng AI", self._show_tab3),
+            ("tab4", "4️⃣ Bước 4: Xử Lý Phụ Đề", self._show_tab4),
         ]
 
         for tab_id, tab_label, tab_cmd in tabs:
             btn = ctk.CTkButton(
                 self.sidebar_frame,
                 text=tab_label,
-                font=ctk.CTkFont(size=14, weight="bold"),
+                font=ctk.CTkFont(size=13, weight="bold"),
                 anchor="w",
                 height=42,
                 fg_color="transparent",
@@ -82,7 +82,7 @@ class MainWindow(ctk.CTk):
                 hover_color=("gray70", "gray30"),
                 command=tab_cmd,
             )
-            btn.pack(fill="x", padx=12, pady=4)
+            btn.pack(fill="x", padx=10, pady=3)
             self.nav_buttons[tab_id] = btn
 
         # Khung cài đặt phía đáy Sidebar
@@ -113,17 +113,49 @@ class MainWindow(ctk.CTk):
         self.main_container = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.main_container.pack(side="right", fill="both", expand=True)
 
+        # 2.1. THANH QUY TRÌNH TỪNG BƯỚC NỔI BẬT PHÍA TRÊN (TOP STEP WIZARD BAR)
+        self.top_wizard_frame = ctk.CTkFrame(self.main_container, height=44, corner_radius=0, fg_color=("#E5E5E5", "#1E1E1E"))
+        self.top_wizard_frame.pack(fill="x", padx=0, pady=0)
+
+        self.step_buttons = {}
+        wizard_steps = [
+            ("tab1", "🎬 Bước 1: Trích Xuất & Làm Mờ", self._show_tab1),
+            ("tab2", "🌐 Bước 2: Dịch Thuật AI", self._show_tab2),
+            ("tab3", "🎙️ Bước 3: Lồng Tiếng AI", self._show_tab3),
+            ("tab4", "📄 Bước 4: Xử Lý Phụ Đề", self._show_tab4),
+        ]
+
+        for s_id, s_title, s_cmd in wizard_steps:
+            s_btn = ctk.CTkButton(
+                self.top_wizard_frame,
+                text=s_title,
+                command=s_cmd,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                height=34,
+                corner_radius=6,
+                fg_color="transparent",
+                text_color=("gray20", "gray85"),
+                hover_color=("gray75", "gray30"),
+            )
+            s_btn.pack(side="left", padx=6, pady=5)
+            self.step_buttons[s_id] = s_btn
+
+        # Vùng chứa view các tab (Tab Content Frame)
+        self.tab_content_area = ctk.CTkFrame(self.main_container, corner_radius=0, fg_color="transparent")
+        self.tab_content_area.pack(fill="both", expand=True)
+
         # Khởi tạo các Tab
         self.tab1_view = VideoExtractTab(
-            self.main_container,
+            self.tab_content_area,
             on_extracted_audio_cb=self._on_audio_extracted,
+            on_next_step_cb=self._show_tab2,
         )
         self.tab2_view = TranslationTab(
-            self.main_container,
+            self.tab_content_area,
             on_send_to_dubbing_cb=self._on_subtitles_translated,
         )
-        self.tab3_view = DubbingTab(self.main_container)
-        self.tab4_view = TextConversionTab(self.main_container)
+        self.tab3_view = DubbingTab(self.tab_content_area)
+        self.tab4_view = TextConversionTab(self.tab_content_area)
 
         # Mặc định mở Tab 2 (Dịch thuật) hoặc Tab 1
         self._show_tab1()
@@ -137,25 +169,32 @@ class MainWindow(ctk.CTk):
             tab.pack_forget()
         for btn in self.nav_buttons.values():
             btn.configure(fg_color="transparent")
+        for btn in self.step_buttons.values():
+            btn.configure(fg_color="transparent", text_color=("gray20", "gray85"))
+
+    def _highlight_tab(self, tab_key: str):
+        self.nav_buttons[tab_key].configure(fg_color=("gray75", "gray25"))
+        if tab_key in self.step_buttons:
+            self.step_buttons[tab_key].configure(fg_color="#00ADB5", text_color="#FFFFFF")
 
     def _show_tab1(self):
         self._hide_all_tabs()
-        self.nav_buttons["tab1"].configure(fg_color=("gray75", "gray25"))
+        self._highlight_tab("tab1")
         self.tab1_view.pack(fill="both", expand=True)
 
     def _show_tab2(self):
         self._hide_all_tabs()
-        self.nav_buttons["tab2"].configure(fg_color=("gray75", "gray25"))
+        self._highlight_tab("tab2")
         self.tab2_view.pack(fill="both", expand=True)
 
     def _show_tab3(self):
         self._hide_all_tabs()
-        self.nav_buttons["tab3"].configure(fg_color=("gray75", "gray25"))
+        self._highlight_tab("tab3")
         self.tab3_view.pack(fill="both", expand=True)
 
     def _show_tab4(self):
         self._hide_all_tabs()
-        self.nav_buttons["tab4"].configure(fg_color=("gray75", "gray25"))
+        self._highlight_tab("tab4")
         self.tab4_view.pack(fill="both", expand=True)
 
     # =================================================================

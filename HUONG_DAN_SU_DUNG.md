@@ -68,22 +68,32 @@ Tab này phục vụ chuẩn bị tư liệu đầu vào (video gốc và audio 
 ### 2. Chọn Video Cục Bộ:
 - Nếu bạn đã có sẵn file video trên máy tính, bấm nút **`Chọn video...`** để nạp file (hỗ trợ .mp4, .mkv, .avi, .mov).
 
-### 3. Màn hình Xem Trước & Vùng Phụ Đề (ROI):
-- **Màn hình Canvas**: Hiển thị hình ảnh thực tế của video.
-- **Thanh trượt thời gian (Slider)**: Kéo qua lại để xem bất kỳ giây nào trong video.
-- **Khung tọa độ ROI (Region of Interest)**:
-  - `Tọa độ X`: Điểm bắt đầu theo chiều ngang (tính từ mép trái sang).
-  - `Tọa độ Y`: Điểm bắt đầu theo chiều dọc (tính từ mép trên xuống).
-  - `Chiều rộng W` & `Chiều cao H`: Kích thước khung chữ nhật bao quanh phụ đề cũ.
-  - **Nút `Tự đặt vùng chân video (15% đáy)`**: Bấm nút này để tự động khoanh vùng chữ thường xuất hiện ở phần đáy của video ngắn/phim.
-  - Trên màn hình xem trước sẽ có khung viền màu xanh lá cây thể hiện chính xác vùng được chọn.
+### 3. Màn hình Xem Trước & Thao Tác Kéo Thả Vùng Làm Mờ (ROI):
+- **Màn hình Canvas tương tác trực tiếp 2 chiều**:
+  - **Kéo di chuyển (Move)**: Nhấp chuột vào giữa vùng chữ nhật màu xanh và kéo để di chuyển vùng làm mờ đến bất kỳ vị trí nào trên video.
+  - **Co giãn 8 hướng (Resize)**: Nhấp vào một trong **8 điểm neo hình vuông** (4 góc và 4 cạnh) để kéo giãn hoặc thu nhỏ vùng làm mờ theo chiều mong muốn. Con trỏ chuột sẽ tự động thay đổi hướng mũi tên tương ứng.
+  - **Vẽ vùng mới**: Nhấp chuột ra ngoài và kéo để vẽ một khung làm mờ hoàn toàn mới.
+  - **Huy hiệu thông tin nổi**: Hiển thị kích thước thực `WxH`, tọa độ `X, Y` và phần trăm chiều cao video ngay phía trên hộp chọn.
+- **Thanh trượt thời gian (Slider)**: Kéo qua lại để xem bất kỳ giây/frame nào trong video.
+- **Khung tọa độ số**: Tự động nhảy số theo thao tác chuột, hoặc bạn có thể gõ số trực tiếp bằng bàn phím.
+- **Các nút đặt nhanh vị trí**:
+  - `15% Chân Video (Chuẩn)`: Tự động khoanh vùng chân video chuyên dụng cho phụ đề phim/video ngắn.
+  - `20% Đáy`: Phù hợp với phụ đề 2 dòng hoặc kích thước chữ to.
+  - `15% Đầu Video`: Dùng để che logo hoặc watermark ở góc trên.
+  - `Toàn Màn Hình`: Phủ mờ toàn bộ khung hình.
 
-### 4. Các Nút Tác Vụ Nhanh:
-- **`🎵 Tách Audio sang MP3`**:
-  - Trích xuất toàn bộ tiếng của video sang file `.mp3` chất lượng cao.
-  - Tự động chuyển đường dẫn audio này sang Tab 2 để chuẩn bị dịch theo ngữ cảnh.
-- **`✨ Làm Mờ Vùng Phụ Đề Cũ`**:
-  - Áp dụng bộ lọc `boxblur` làm mờ phần chữ gốc trong vùng ROI, giúp bạn có một video sạch sẽ để chèn phụ đề tiếng Việt mới lên trên mà không bị rối mắt.
+### 4. Khối Điều Khiển Thực Thi Nổi Bật (Execution Panel):
+- **Tùy chọn chế độ thực thi**:
+  - ⚡ **Trọn gói: Tách Audio + Làm mờ Video** *(Khuyên dùng)*: Vừa tách audio để sẵn sàng dịch thuật, vừa làm mờ sạch chữ phụ đề cũ trên video.
+  - 🎬 **Chỉ làm mờ phụ đề video (Xóa Hardsub)**: Chỉ xuất video đã làm mờ theo vùng ROI.
+  - 🎵 **Chỉ tách âm thanh sang MP3**: Trích xuất nhanh audio chất lượng cao.
+- **Mức độ làm mờ**: Có 3 mức tùy chọn: *Tiêu chuẩn (10:5)*, *Mạnh (20:10)*, *Nhẹ (5:2)*.
+- **Nút `🚀 BẮT ĐẦU THỰC THI`**:
+  - Nút bấm to màu xanh ngọc nổi bật ở cột phải.
+  - Nhấn để chạy quy trình, có thanh tiến trình `%` thời gian thực và đếm giây chi tiết.
+- **Sau khi hoàn tất**:
+  - Nút **`📂 Mở Thư Mục Kết Quả`**: Mở ngay folder chứa file video/audio đã xuất.
+  - Nút **`➡️ Sang Bước 2: Dịch Thuật AI`**: Tự động chuyển tiếp audio sang Tab 2 và mở sẵn giao diện dịch thuật.
 
 ---
 
