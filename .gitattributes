@@ -2,3 +2,4 @@
 # Ensure Windows batch files always have CRLF line endings
 *.bat text eol=crlf
 *.cmd text eol=crlf
+

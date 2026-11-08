@@ -83,3 +83,4 @@ with open("run.bat", "wb") as f:
     f.write(crlf_content.encode("utf-8"))
 
 print("Successfully wrote run.bat with CRLF!")
+
