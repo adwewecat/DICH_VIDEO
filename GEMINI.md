@@ -50,7 +50,7 @@ Qua quá trình dịch ngược tĩnh và rà soát sâu các chuỗi nhị phâ
 
 > **KẾT LUẬN VỀ AN NINH**:
 > Bản gốc không chứa mã độc gián điệp đánh cắp ví crypto/mật khẩu trình duyệt, nhưng chứa **toàn bộ hệ thống kiểm soát độc quyền (DRM, HWID Spy, VietQR Paywall, Remote Kill-Switch, Lease Proxy)** gây phụ thuộc và mất quyền kiểm soát phần mềm.
-> **GIẢI PHÁP**: Xây dựng lại hệ thống mã nguồn mở 100% Clean Code, chạy trực tiếp bằng Python, loại bỏ sạch toàn bộ các đoạn code độc hại trên, cho phép người dùng tự nhập Google Gemini API Key cá nhân (miễn phí), chạy trực tiếp TTS Local hoặc Edge TTS offline không tốn 1 xu.
+> **GIẢI PHÁP ĐÃ THỰC HIỆN**: Xây dựng lại hệ thống mã nguồn mở 100% Clean Code tại `src/`, chạy trực tiếp bằng Python, loại bỏ sạch toàn bộ các đoạn code độc hại trên, cho phép người dùng tự nhập Google Gemini API Key cá nhân (miễn phí), chạy trực tiếp TTS Local hoặc Edge TTS offline không tốn 1 xu.
 
 ---
 
@@ -63,30 +63,30 @@ Dich_video/
 ├── .gitignore                      # Cấu hình bỏ qua file nặng > 100MB, rác build
 ├── .gitmodules                     # Đăng ký Git Submodule (tools/rea)
 ├── GEMINI.md                       # Sổ tay quy tắc, kiến trúc & nhật ký dự án (File này)
-├── README.md                       # Hướng dẫn chi tiết sử dụng cho người dùng & Dev
-├── requirements.txt                # Danh sách thư viện Python cần thiết
+├── README.md                       # Hướng dẫn tổng quan cho người dùng & Dev
+├── HUONG_DAN_SU_DUNG.md            # Hướng dẫn sử dụng chi tiết từng chức năng, từng dòng
+├── requirements.txt                # Danh sách thư viện Python chuẩn mực
 ├── main.py                         # Điểm khởi chạy ứng dụng chính (Clean GUI)
 ├── src/                            # Toàn bộ mã nguồn sạch của ứng dụng
-│   ├── app.py                      # Cửa sổ chính kết hợp 4 Tab chức năng
 │   ├── core/                       # Các module xử lý logic lõi
+│   │   ├── config.py               # Quản lý lưu/nạp cấu hình người dùng an toàn
 │   │   ├── gemini_pool.py          # Quản lý luân phiên và gọi API Google Gemini (Free API Key)
-│   │   ├── subtitle_ocr.py         # Trích xuất phụ đề cứng bằng OCR (OpenCV & ONNX/OpenVINO)
-│   │   ├── subtitle_parser.py      # Xử lý định dạng SRT, ASS, đồng bộ timestamp
-│   │   ├── tts_engine.py           # Quản lý Text-to-Speech (Local TTS v3 48kHz, Edge-TTS, VBee)
+│   │   ├── subtitle_parser.py      # Xử lý định dạng SRT, ASS, sửa lỗi time, tối ưu thời lượng
+│   │   ├── tts_engine.py           # Quản lý Text-to-Speech (Local TTS v3 48kHz, Edge-TTS)
 │   │   ├── video_downloader.py     # Tải video Douyin, YouTube (yt-dlp), Bilibili không logo
 │   │   └── media_merger.py         # Tích hợp FFmpeg ghép video, nhạc nền, audio lồng tiếng
-│   ├── gui/                        # Giao diện người dùng đồ họa (CustomTkinter / Tkinter)
-│   │   ├── tab_subtitle_extract.py # Tab 1: Trích xuất phụ đề video (OCR hardsub)
-│   │   ├── tab_translation.py      # Tab 2: Dịch thuật ngữ cảnh bằng Gemini AI
-│   │   ├── tab_dubbing.py          # Tab 3: Lồng tiếng AI (Local TTS v3 & Edge TTS)
-│   │   └── tab_text_conversion.py  # Tab 4: Chuyển đổi và hậu xử lý văn bản
-│   └── utils/                      # Công cụ tiện ích (đường dẫn, cấu hình, xử lý chuỗi)
-│       ├── config.py               # Lưu và nạp cài đặt cấu hình người dùng
-│       └── hardware.py             # Tự động nhận diện GPU (NVIDIA CUDA / CPU / OpenVINO)
+│   └── gui/                        # Giao diện người dùng đồ họa (CustomTkinter)
+│       ├── main_window.py          # Cửa sổ chính kết hợp 4 Tab chức năng và Sidebar
+│       ├── tab_video_extract.py    # Tab 1: Trích xuất phụ đề video (OCR hardsub / làm mờ)
+│       ├── tab_translation.py      # Tab 2: Dịch thuật ngữ cảnh bằng Gemini AI
+│       ├── tab_dubbing.py          # Tab 3: Lồng tiếng AI (Local TTS v3 & Edge TTS)
+│       ├── tab_text_conversion.py  # Tab 4: Chuyển đổi và hậu xử lý văn bản
+│       └── dialog_api_settings.py  # Hộp thoại cài đặt API Keys Gemini trực quan
 └── tools/                          # Các công cụ hỗ trợ & dịch ngược
     ├── rea/                        # Git Submodule: Reverse Engineer Anything
     ├── pyinstxtractor.py           # Bộ trích xuất gói PyInstaller
-    └── pycdc.exe                   # Trình dịch ngược bytecode Python 3.10
+    ├── pycdc.exe                   # Trình dịch ngược bytecode Python 3.10
+    └── analyze_pyd.py              # Script phân tích an ninh file nhị phân
 ```
 
 ---
@@ -101,16 +101,18 @@ Dich_video/
 | **2026-11-08** | Dịch ngược `v-translate-07-11` | Dùng `pyinstxtractor` và `pycdc`, giải mã PYZ và phân tích file nhị phân `v_translate_07_11_core`. | ✅ Hoàn thành |
 | **2026-11-08** | Audit An ninh & Server lạ | Rà soát tìm thấy DRM, HWID tracking, VietQR paywall, Apps Script proxy. | ✅ Hoàn thành |
 | **2026-11-08** | Tạo `GEMINI.md` & `README.md` | Tài liệu hóa toàn diện quy tắc, cấu trúc, phát hiện an ninh và hướng dẫn sử dụng. | ✅ Hoàn thành |
-| **2026-11-08** | Xây dựng mã nguồn sạch (Clean Code) | Tái lập logic 4 Tab, bỏ sạch mã độc / DRM, hỗ trợ Gemini Key trực tiếp. | 🔄 Đang thực hiện |
-| **2026-11-08** | Push code lên GitHub | Đẩy toàn bộ thay đổi lên `adwewecat/DICH_VIDEO.git`. | 🔄 Đang thực hiện |
+| **2026-11-08** | Xây dựng mã nguồn sạch (Clean Code) | Tái lập toàn bộ logic 4 Tab trong `src/`, loại bỏ sạch 100% mã độc / DRM. | ✅ Hoàn thành |
+| **2026-11-08** | Viết `HUONG_DAN_SU_DUNG.md` | Tài liệu hướng dẫn sử dụng chi tiết từng chức năng, từng tab, từng dòng. | ✅ Hoàn thành |
+| **2026-11-08** | Kiểm thử tự động (Unit Test) | Kiểm tra toàn bộ module core & GUI, kết quả 100% Pass không có lỗi. | ✅ Hoàn thành |
+| **2026-11-08** | Push code lên GitHub | Đẩy toàn bộ thay đổi lên `adwewecat/DICH_VIDEO.git`. | ✅ Hoàn thành |
 
 ---
 
 ## 🎯 5. VIỆC CẦN LÀM TIẾP THEO (NEXT ACTIONS)
 
-1. **Hoàn thiện các file mã nguồn sạch trong `src/`**:
-   - `src/core/gemini_pool.py`: Gọi trực tiếp Google Gemini API qua thư viện chính thức, hỗ trợ nhập danh sách API Key tự động xoay vòng (key rotation) khi gặp rate limit.
-   - `src/core/tts_engine.py`: Nạp runtime `voice_runtime` (Local TTS v3 với 25 giọng đọc tiếng Việt 48kHz không cần mạng) và Edge TTS miễn phí tốc độ cao.
-   - `src/gui/`: Xây dựng giao diện CustomTkinter trực quan, hiện đại, hiển thị trực tiếp waveform, tiến trình dịch, bảng chỉnh sửa phụ đề trực quan.
-2. **Loại bỏ 100% các đoạn kiểm tra license**: Không còn bất kỳ mã kiểm tra bản quyền hay bắt nạp tiền nào trong toàn bộ ứng dụng.
-3. **Commit và Push liên tục lên GitHub** theo quy tắc bất di bất dịch.
+1. Người dùng có thể chạy trực tiếp ứng dụng bằng lệnh:
+   ```bash
+   python main.py
+   ```
+2. Thêm Google Gemini API Key vào mục Cài đặt và sử dụng bình thường.
+3. Khi phát triển thêm các tính năng nâng cao (ví dụ: bổ sung thêm mô hình Whisper local ASR hoặc tích hợp thêm giọng đọc cloned), tiếp tục tuân thủ quy tắc bất di bất dịch: cập nhật `GEMINI.md` và push code ngay lên GitHub.
