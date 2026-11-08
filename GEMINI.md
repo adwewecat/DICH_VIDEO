@@ -110,6 +110,7 @@ Dich_video/
 | **2026-11-08** | Khắc phục lỗi 404/503 & Tích hợp Auto-Fallback | Loại bỏ `gemini-2.5-flash` đã bị Google khai tử (404), mặc định `gemini-3.6-flash` cực nhanh và ổn định. Thêm cơ chế tự động chuyển model dự phòng khi gặp 404 hoặc 503 (quá tải) mà không gây gián đoạn. | ✅ Hoàn thành |
 | **2026-11-08** | Nâng cấp Kéo Thả ROI Co Giãn & Nút Thực Thi | Cải tiến vùng làm mờ video thành tương tác chuột 2 chiều (kéo di chuyển, co giãn 8 điểm neo, đổi con trỏ chuột theo hướng). Bổ sung khối "🚀 BẮT ĐẦU THỰC THI" nổi bật kèm tiến trình và thanh điều hướng 4 bước toàn diện. | ✅ Hoàn thành |
 | **2026-11-08** | Sửa Lỗi File Khởi Chạy `run.bat` | Khắc phục lỗi `is not recognized as an internal or external command` do ký tự `&` trong CMD và định dạng dòng Unix LF. Chuẩn hóa CRLF Windows, khóa bằng `.gitattributes`, bổ sung tự dò tìm đường dẫn Python 3.12/3.10. | ✅ Hoàn thành |
+| **2026-11-09** | Tích hợp AI Trích Xuất Phụ Đề Tự Động (Auto-Transcribe to SRT) | Khắc phục triệt để tình trạng thiếu file phụ đề khi tải video. Tích hợp AI Gemini Speech-to-Text tự động trích xuất toàn bộ lời thoại video sang file SRT chuẩn timestamp. Liên thông tự động cả Audio và SRT từ Tab 1 sang Tab 2 và bổ sung nút 'Tự tạo phụ đề AI' trong Tab 2. | ✅ Hoàn thành |
 | **2026-11-08** | Push code lên GitHub | Đẩy toàn bộ thay đổi lên `adwewecat/DICH_VIDEO.git`. | ✅ Hoàn thành |
 
 ---

@@ -52,9 +52,19 @@ class TranslationTab(ctk.CTkFrame):
 
         # Chọn file SRT
         ctk.CTkLabel(top_frame, text="File phụ đề gốc (.srt, .ass):", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, sticky="w", padx=10, pady=8)
-        self.srt_path_entry = ctk.CTkEntry(top_frame, placeholder_text="Đường dẫn file phụ đề gốc...", width=400)
+        self.srt_path_entry = ctk.CTkEntry(top_frame, placeholder_text="Đường dẫn file phụ đề gốc...", width=380)
         self.srt_path_entry.grid(row=0, column=1, sticky="ew", padx=10, pady=8)
-        ctk.CTkButton(top_frame, text="Chọn file...", width=100, command=self._browse_srt_file).grid(row=0, column=2, padx=10, pady=8)
+        ctk.CTkButton(top_frame, text="Chọn file...", width=95, command=self._browse_srt_file).grid(row=0, column=2, padx=(4, 4), pady=8)
+        self.auto_transcribe_btn = ctk.CTkButton(
+            top_frame,
+            text="🪄 Tự Tạo Phụ Đề AI (Transcribe)",
+            width=210,
+            fg_color="#6C5CE7",
+            hover_color="#5843BE",
+            font=ctk.CTkFont(weight="bold"),
+            command=self._auto_transcribe_threaded,
+        )
+        self.auto_transcribe_btn.grid(row=0, column=3, padx=(4, 10), pady=8)
 
         # Chọn file Audio / Video ngữ cảnh (Tùy chọn)
         ctk.CTkLabel(top_frame, text="Audio/Video kèm theo (Tùy chọn):", font=ctk.CTkFont(weight="bold")).grid(row=1, column=0, sticky="w", padx=10, pady=8)
@@ -258,12 +268,67 @@ class TranslationTab(ctk.CTkFrame):
                 self.translated_entries[stt - 1].text = new_val
                 self.tree.item(item, values=(values[0], values[1], values[2], values[3], new_val))
 
+    def _auto_transcribe_threaded(self):
+        """Tự động dùng Gemini AI nghe âm thanh và tạo file phụ đề SRT kèm timestamp chuẩn."""
+        audio_file = self.audio_path_entry.get().strip()
+        if not audio_file or not os.path.isfile(audio_file):
+            audio_file = filedialog.askopenfilename(
+                title="Chọn file âm thanh hoặc video để AI trích xuất phụ đề",
+                filetypes=[
+                    ("Audio / Video", "*.mp3;*.wav;*.m4a;*.mp4;*.mkv;*.avi"),
+                    ("Tất cả", "*.*"),
+                ],
+            )
+            if not audio_file:
+                return
+            self.audio_path_entry.delete(0, "end")
+            self.audio_path_entry.insert(0, audio_file)
+
+        self.auto_transcribe_btn.configure(state="disabled")
+        self.status_label.configure(text="Đang kết nối Gemini AI để trích xuất phụ đề...")
+        self.progress_bar.set(0.15)
+
+        def worker():
+            def prog_cb(msg):
+                self.after(0, lambda: self.status_label.configure(text=msg))
+
+            ok, srt_text, srt_path = gemini_pool.transcribe_audio_to_srt(
+                audio_path=audio_file,
+                progress_callback=prog_cb,
+            )
+
+            def done():
+                self.auto_transcribe_btn.configure(state="normal")
+                self.progress_bar.set(1.0 if ok else 0.0)
+                if ok and os.path.isfile(srt_path):
+                    self.load_subtitle_file(srt_path)
+                    messagebox.showinfo(
+                        "Thành công",
+                        f"Đã trích xuất thành công {len(self.current_entries)} câu phụ đề bằng AI!\n\nFile SRT đã lưu tại:\n{srt_path}"
+                    )
+                else:
+                    self.status_label.configure(text="❌ Trích xuất phụ đề thất bại.")
+                    messagebox.showerror("Lỗi trích xuất phụ đề", f"Không thể trích xuất phụ đề từ âm thanh:\n\n{srt_path}")
+
+            self.after(0, done)
+
+        threading.Thread(target=worker, daemon=True).start()
+
     # =================================================================
     # TIẾN TRÌNH DỊCH THUẬT NỀN (THREADED WORKER)
     # =================================================================
 
     def _start_translation_threaded(self):
         if not self.current_entries:
+            audio_fpath = self.audio_path_entry.get().strip()
+            if audio_fpath and os.path.isfile(audio_fpath):
+                ask = messagebox.askyesno(
+                    "Tự Tạo Phụ Đề AI",
+                    f"Bảng phụ đề hiện đang trống!\n\nBạn có muốn Gemini AI tự động nghe file âm thanh:\n'{os.path.basename(audio_fpath)}'\nvà trích xuất toàn bộ câu thoại thành file phụ đề (.srt) ngay bây giờ không?"
+                )
+                if ask:
+                    self._auto_transcribe_threaded()
+                return
             messagebox.showwarning("Cảnh báo", "Vui lòng chọn hoặc nạp file phụ đề trước.")
             return
 

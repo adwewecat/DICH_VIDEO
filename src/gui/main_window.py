@@ -201,10 +201,13 @@ class MainWindow(ctk.CTk):
     # LIÊN THÔNG DỮ LIỆU GIỮA CÁC TAB (SMOOTH WORKFLOW)
     # =================================================================
 
-    def _on_audio_extracted(self, audio_path: str):
-        """Khi Tab 1 trích xuất audio xong, tự động gán sang Tab 2 làm audio ngữ cảnh."""
-        self.tab2_view.audio_path_entry.delete(0, "end")
-        self.tab2_view.audio_path_entry.insert(0, audio_path)
+    def _on_audio_extracted(self, audio_path: str = "", srt_path: str = ""):
+        """Khi Tab 1 trích xuất xong, tự động gán audio và nạp trực tiếp file phụ đề SRT sang Tab 2."""
+        if audio_path:
+            self.tab2_view.audio_path_entry.delete(0, "end")
+            self.tab2_view.audio_path_entry.insert(0, audio_path)
+        if srt_path and os.path.isfile(srt_path):
+            self.tab2_view.load_subtitle_file(srt_path)
         self._show_tab2()
 
     def _on_subtitles_translated(self, entries):

@@ -26,6 +26,7 @@ import cv2
 from PIL import Image, ImageTk
 
 from ..core.config import config
+from ..core.gemini_pool import gemini_pool
 from ..core.media_merger import media_merger
 from ..core.video_downloader import video_downloader
 
@@ -72,6 +73,7 @@ class VideoExtractTab(ctk.CTkFrame):
         self._is_processing = False
         self.last_audio_file: str = ""
         self.last_blurred_video: str = ""
+        self.last_srt_file: str = ""
 
         self._build_ui()
 
@@ -268,14 +270,22 @@ class VideoExtractTab(ctk.CTkFrame):
         ).pack(anchor="w", padx=12, pady=(0, 6))
 
         # Tùy chọn chế độ thực thi
-        self.exec_mode = tk.StringVar(value="all")
+        self.exec_mode = tk.StringVar(value="full_all")
 
         ctk.CTkRadioButton(
             right_panel,
-            text="⚡ Trọn gói: Tách Audio + Làm mờ Video",
+            text="⚡ Trọn gói: Tạo Phụ Đề SRT + Tách Audio + Làm mờ",
             variable=self.exec_mode,
-            value="all",
+            value="full_all",
             font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", padx=12, pady=3)
+
+        ctk.CTkRadioButton(
+            right_panel,
+            text="📝 Chỉ Trích xuất Phụ Đề (.srt) bằng AI",
+            variable=self.exec_mode,
+            value="srt",
+            font=ctk.CTkFont(size=12),
         ).pack(anchor="w", padx=12, pady=3)
 
         ctk.CTkRadioButton(
@@ -760,6 +770,7 @@ class VideoExtractTab(ctk.CTkFrame):
 
             out_audio = os.path.join(base_dir, f"{base_name}.mp3")
             out_video = os.path.join(base_dir, f"{base_name}_blurred.mp4")
+            out_srt = os.path.join(base_dir, f"{base_name}.srt")
 
             def prog_cb(pct, status_text):
                 self.after(0, lambda: self._update_progress_ui(pct / 100.0, status_text))
@@ -767,21 +778,35 @@ class VideoExtractTab(ctk.CTkFrame):
             success = True
             err_msg = ""
 
-            # BƯỚC 1: TÁCH AUDIO
-            if mode in ["audio", "all"]:
-                prog_cb(10.0, "Đang trích xuất audio MP3 bằng FFmpeg...")
+            # BƯỚC 1: TÁCH AUDIO MP3
+            if mode in ["audio", "all", "full_all", "srt"]:
+                prog_cb(15.0, "Đang trích xuất audio MP3 bằng FFmpeg...")
                 ok_audio = media_merger.extract_audio(self.current_video_path, out_audio)
                 if ok_audio:
                     self.last_audio_file = out_audio
-                    if self.on_extracted_audio_cb:
-                        self.on_extracted_audio_cb(out_audio)
                 else:
                     success = False
                     err_msg = "Lỗi khi trích xuất audio từ video."
 
-            # BƯỚC 2: LÀM MỜ VIDEO
-            if success and mode in ["blur", "all"]:
-                prog_cb(30.0, "Đang áp dụng bộ lọc làm mờ vùng phụ đề cũ...")
+            # BƯỚC 2: TỰ ĐỘNG TRÍCH XUẤT PHỤ ĐỀ SRT BẰNG AI
+            if success and mode in ["srt", "full_all"]:
+                prog_cb(35.0, "Đang gửi âm thanh lên Gemini AI để tự động tạo file phụ đề SRT...")
+                ok_srt, srt_text, srt_path = gemini_pool.transcribe_audio_to_srt(
+                    audio_path=out_audio,
+                    output_srt_path=out_srt,
+                    progress_callback=lambda msg: prog_cb(50.0, msg),
+                )
+                if ok_srt:
+                    self.last_srt_file = srt_path
+                else:
+                    print(f"[VideoExtractTab] Cảnh báo tạo phụ đề AI: {srt_path}")
+                    if mode == "srt":
+                        success = False
+                        err_msg = srt_path
+
+            # BƯỚC 3: LÀM MỜ VÙNG PHỤ ĐỀ TRÊN VIDEO
+            if success and mode in ["blur", "all", "full_all"]:
+                prog_cb(70.0, "Đang áp dụng bộ lọc làm mờ vùng phụ đề cũ bằng FFmpeg...")
                 ok_blur = media_merger.blur_subtitle_region(
                     video_path=self.current_video_path,
                     output_video_path=out_video,
@@ -806,11 +831,13 @@ class VideoExtractTab(ctk.CTkFrame):
                     self.next_step_btn.configure(state="normal")
 
                     msg = "🎉 TIẾN TRÌNH THỰC THI ĐÃ HOÀN TẤT THÀNH CÔNG!\n\n"
-                    if self.last_audio_file:
-                        msg += f"🎵 Audio: {os.path.basename(self.last_audio_file)}\n"
-                    if self.last_blurred_video:
+                    if self.last_srt_file and os.path.isfile(self.last_srt_file):
+                        msg += f"📝 File Phụ đề SRT: {os.path.basename(self.last_srt_file)}\n"
+                    if self.last_audio_file and os.path.isfile(self.last_audio_file):
+                        msg += f"🎵 File Audio: {os.path.basename(self.last_audio_file)}\n"
+                    if self.last_blurred_video and os.path.isfile(self.last_blurred_video):
                         msg += f"🎬 Video đã làm mờ: {os.path.basename(self.last_blurred_video)}\n"
-                    msg += "\nBạn có muốn chuyển sang Bước 2 (Dịch Thuật AI) ngay bây giờ không?"
+                    msg += "\nBạn có muốn chuyển sang Bước 2 (Dịch Thuật AI) để xem bảng phụ đề và dịch ngay bây giờ không?"
 
                     self.exec_status_label.configure(text="✅ Hoàn tất thành công!", text_color="#4ECCA3")
                     if messagebox.askyesno("Thành công", msg):
@@ -828,7 +855,7 @@ class VideoExtractTab(ctk.CTkFrame):
         self.exec_status_label.configure(text=text, text_color="#EEEEEE")
 
     def _open_output_folder(self):
-        target = self.last_blurred_video or self.last_audio_file or self.current_video_path
+        target = self.last_blurred_video or self.last_audio_file or self.last_srt_file or self.current_video_path
         if target and os.path.exists(target):
             folder = os.path.dirname(os.path.abspath(target))
             os.system(f'explorer "{folder}"')
@@ -836,7 +863,9 @@ class VideoExtractTab(ctk.CTkFrame):
             messagebox.showinfo("Thông báo", "Chưa có file kết quả để mở.")
 
     def _go_to_next_step(self):
-        if self.on_next_step_cb:
+        if self.on_extracted_audio_cb:
+            self.on_extracted_audio_cb(self.last_audio_file, self.last_srt_file)
+        elif self.on_next_step_cb:
             self.on_next_step_cb()
 
     def _download_video_threaded(self):

@@ -356,6 +356,108 @@ class GeminiTranslationPool:
 
         return ""
 
+    def transcribe_audio_to_srt(
+        self,
+        audio_path: str,
+        output_srt_path: Optional[str] = None,
+        progress_callback: Optional[Callable[[str], None]] = None,
+    ) -> Tuple[bool, str, str]:
+        """
+        Trích xuất phụ đề tự động (Speech-to-Text / Audio Transcribe) sang file SRT bằng Gemini AI.
+        Tự động nghe âm thanh của video, nhận diện tiếng nói, ngắt câu và căn chỉnh timestamp chuẩn xác.
+        Trả về: (thành công, nội dung SRT, đường dẫn file SRT).
+        """
+        if not os.path.isfile(audio_path):
+            return False, "", "File âm thanh không tồn tại trên đĩa."
+
+        current_key = self.get_current_key()
+        if not current_key:
+            return False, "", "Chưa có Google Gemini API Key. Vui lòng vào Cài đặt để thêm key."
+
+        if progress_callback:
+            progress_callback("Đang tải file âm thanh lên Gemini File API...")
+
+        try:
+            client = self._get_client_for_key(current_key)
+            uploaded_file = client.files.upload(file=audio_path)
+
+            if progress_callback:
+                progress_callback("Đang chờ AI chuẩn bị xử lý âm thanh...")
+
+            for _ in range(45):
+                file_info = client.files.get(name=uploaded_file.name)
+                if file_info.state.name == "ACTIVE":
+                    break
+                time.sleep(1.0)
+
+            if progress_callback:
+                progress_callback("AI đang nghe toàn bộ âm thanh và tự động tạo phụ đề SRT kèm timestamp...")
+
+            transcribe_prompt = (
+                "Bạn là một chuyên gia tạo phụ đề video chuyên nghiệp.\n"
+                "Hãy nghe kỹ toàn bộ file âm thanh này và xuất ra toàn bộ lời thoại dưới định dạng chuẩn SubRip (.srt).\n"
+                "Quy tắc bắt buộc:\n"
+                "1. Đúng cấu trúc file SRT chuẩn:\n"
+                "1\n"
+                "00:00:01,000 --> 00:00:04,500\n"
+                "[Nội dung câu nói gốc]\n\n"
+                "2\n"
+                "00:00:05,000 --> 00:00:08,200\n"
+                "[Nội dung câu nói tiếp theo]\n\n"
+                "2. Mốc thời gian (timestamp: HH:MM:SS,mmm) phải khớp chính xác với thời điểm nhân vật bắt đầu nói và kết thúc nói.\n"
+                "3. Giữ nguyên ngôn ngữ gốc được nói trong video (tiếng Trung, tiếng Anh, v.v.).\n"
+                "4. Không bỏ sót bất kỳ câu thoại nào.\n"
+                "5. Chỉ trả về duy nhất nội dung text SRT nguyên bản, không viết lời mở đầu, không giải thích."
+            )
+
+            models_to_try = [self.model_name] + [m for m in self.STABLE_FALLBACK_MODELS if m != self.model_name]
+            response = None
+            last_err = None
+
+            for m_candidate in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=m_candidate,
+                        contents=[uploaded_file, transcribe_prompt],
+                    )
+                    if response and response.text:
+                        break
+                except Exception as e_gen:
+                    last_err = e_gen
+                    print(f"[GeminiPool] Lỗi transcribe với model {m_candidate}: {e_gen}")
+                    continue
+
+            # Dọn dẹp file tạm trên máy chủ Gemini
+            try:
+                client.files.delete(name=uploaded_file.name)
+            except Exception:
+                pass
+
+            if not response or not response.text:
+                return False, "", f"Không nhận được phản hồi phụ đề từ AI. Lỗi: {last_err}"
+
+            raw_text = response.text.strip()
+            # Bỏ định dạng khối markdown ```srt nếu có
+            match = re.search(r"```(?:srt)?\s*([\s\S]*?)```", raw_text)
+            if match:
+                raw_text = match.group(1).strip()
+
+            if not output_srt_path:
+                base_dir = os.path.dirname(audio_path)
+                base_name = os.path.splitext(os.path.basename(audio_path))[0]
+                output_srt_path = os.path.join(base_dir, f"{base_name}.srt")
+
+            with open(output_srt_path, "w", encoding="utf-8") as f:
+                f.write(raw_text)
+
+            if progress_callback:
+                progress_callback(f"Đã tạo file phụ đề thành công: {os.path.basename(output_srt_path)}")
+
+            return True, raw_text, output_srt_path
+
+        except Exception as e:
+            return False, "", f"Lỗi trích xuất phụ đề: {e}"
+
 
 # Singleton instance dùng chung
 gemini_pool = GeminiTranslationPool()

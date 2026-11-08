@@ -84,16 +84,20 @@ Tab này phục vụ chuẩn bị tư liệu đầu vào (video gốc và audio 
 
 ### 4. Khối Điều Khiển Thực Thi Nổi Bật (Execution Panel):
 - **Tùy chọn chế độ thực thi**:
-  - ⚡ **Trọn gói: Tách Audio + Làm mờ Video** *(Khuyên dùng)*: Vừa tách audio để sẵn sàng dịch thuật, vừa làm mờ sạch chữ phụ đề cũ trên video.
+  - ⚡ **Trọn gói Tự Động: Tạo Phụ Đề SRT + Tách Audio + Làm mờ** *(Khuyên dùng nhất)*: 
+    + Vừa tách audio MP3 chất lượng cao.
+    + **Tự động dùng Gemini AI nghe âm thanh và tạo file phụ đề `.srt` gốc** chuẩn từng mili-giây (giải quyết triệt để vấn đề video không có file phụ đề rời).
+    + Làm mờ sạch chữ phụ đề cứng cũ trên video theo vùng ROI đã chọn.
+  - 📝 **Chỉ Trích Xuất Phụ Đề (.srt) bằng AI**: Tự động nghe lời thoại video và tạo file `.srt` gốc.
   - 🎬 **Chỉ làm mờ phụ đề video (Xóa Hardsub)**: Chỉ xuất video đã làm mờ theo vùng ROI.
-  - 🎵 **Chỉ tách âm thanh sang MP3**: Trích xuất nhanh audio chất lượng cao.
+  - 🎵 **Chỉ tách âm thanh sang MP3**: Trích xuất nhanh audio gốc.
 - **Mức độ làm mờ**: Có 3 mức tùy chọn: *Tiêu chuẩn (10:5)*, *Mạnh (20:10)*, *Nhẹ (5:2)*.
 - **Nút `🚀 BẮT ĐẦU THỰC THI`**:
   - Nút bấm to màu xanh ngọc nổi bật ở cột phải.
   - Nhấn để chạy quy trình, có thanh tiến trình `%` thời gian thực và đếm giây chi tiết.
 - **Sau khi hoàn tất**:
-  - Nút **`📂 Mở Thư Mục Kết Quả`**: Mở ngay folder chứa file video/audio đã xuất.
-  - Nút **`➡️ Sang Bước 2: Dịch Thuật AI`**: Tự động chuyển tiếp audio sang Tab 2 và mở sẵn giao diện dịch thuật.
+  - Nút **`📂 Mở Thư Mục Kết Quả`**: Mở ngay folder chứa file video, audio và file phụ đề `.srt` đã xuất.
+  - Nút **`➡️ Sang Bước 2: Dịch Thuật AI`**: Tự động chuyển tiếp cả audio VÀ file phụ đề `.srt` sang Tab 2, tự động nạp toàn bộ danh sách câu vào bảng đối chiếu!
 
 ---
 
@@ -103,11 +107,12 @@ Tab này phục vụ chuẩn bị tư liệu đầu vào (video gốc và audio 
 
 ### Các Bước Thực Hiện:
 1. **File phụ đề gốc (.srt, .ass)**:
-   - Bấm `Chọn file...` để nạp file phụ đề gốc (tiếng Trung, tiếng Anh, v.v.).
-   - Danh sách câu gốc sẽ lập tức hiển thị trên Bảng đối chiếu song ngữ ở giữa màn hình.
+   - Nếu đã chạy quy trình ở Tab 1, file phụ đề `.srt` sẽ **tự động nạp vào bảng** mà không cần chọn thủ công.
+   - Nếu bạn chưa có file phụ đề, bấm nút **`🪄 Tự Tạo Phụ Đề AI (Transcribe)`**: AI sẽ tự động nghe file audio/video và tạo ra danh sách phụ đề cho bạn chỉ trong vài giây!
+   - Hoặc bấm `Chọn file...` nếu bạn đã có sẵn file phụ đề `.srt` tải từ trên mạng về.
 2. **Audio/Video kèm theo (Tùy chọn)**:
-   - Nếu đã tách audio ở Tab 1, ô này sẽ tự động điền sẵn.
-   - Nếu chưa có, bạn có thể bấm chọn file audio MP3/WAV tương ứng với video.
+   - Nếu đã nạp ở Tab 1, ô này sẽ tự động điền sẵn.
+   - Dùng để Gemini AI "nghe" trực tiếp ngữ điệu, giới tính nhân vật và bối cảnh trước khi dịch.
 3. **Cơ chế Dịch 2 Lượt (Two-Pass Translation with Audio)**:
    - Tích chọn **`Bật nghe Audio hiểu ngữ cảnh (Pass 1)`**:
      - *Lượt 1*: Gemini sẽ "nghe" toàn bộ file audio để xác định: nhân vật nào đang nói, quan hệ giữa họ là gì (vợ chồng, đồng nghiệp, bạn bè, bố con), cảm xúc vui vẻ hay tức giận.
